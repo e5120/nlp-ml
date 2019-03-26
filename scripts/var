@@ -1,0 +1,10 @@
+src_dir=../nmt
+
+tools_dir=../tools
+
+utils_dir=../utils
+
+# [JESC]
+domain=JESC
+
+data_dir=../data/$domain

@@ -65,7 +65,7 @@ if __name__ == '__main__':
                         help="path of output file(default:same as input-path)")
     parser.add_argument("--type", metavar="TYPE", choices=["word", "bpe", "unigram", "char"],
                         type=str, default="word", help="model type[word|bpe|unigram|char](default:word)")
-    parser.add_argument("--vocab-size", type=int, default=30000,
+    parser.add_argument("--vocab-size", metavar="N", type=int, default=30000,
                         help="vocabulary size(default:30000). use it except 'word' type ")
     parser.add_argument("--lang", metavar="LANG", type=str, choices=["en", "ja"], required=True,
                         help="language")

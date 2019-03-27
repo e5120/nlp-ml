@@ -2,7 +2,7 @@ cd `dirname $0`
 . var
 
 # [word, bpe, unigram, char]
-TYPE=bpe
+TYPE=unigram
 
 python $utils_dir/tokenizer.py --input-path $data_dir/raw \
                               --input-file en \

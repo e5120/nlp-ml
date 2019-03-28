@@ -6,6 +6,8 @@ import spacy
 
 
 def get_word_tokenizer(args):
+    assert args.lang in ["en", "ja"]
+
     if args.lang == "en":
         tokenizer = spacy.load("en")
     elif args.lang == "ja":
@@ -18,23 +20,28 @@ def get_word_tokenizer(args):
 
 def get_spm_tokenizer(args):
     def spm_train(args):
+        model_prefix = "{}/{}.{}".format(args.input_path, args.input_file, args.type)
         argument = "--input=" + args.input_path + "/" + args.input_file + \
-                " --model_prefix=" + model_path + \
+                " --model_prefix=" + model_prefix + \
                 " --vocab_size=" + str(args.vocab_size) + \
                 " --model_type=" + args.type
         spm.SentencePieceTrainer.Train(argument)
         return
 
-    model_path = "{}/{}.{}".format(args.input_path, args.lang, args.type)
-    if os.path.exists(model_path + ".model") is False:
-        print("There is not the model. Do you train the model? [y/n]")
-        ans = input()
-        if ans[0] != "y" and ans[0] != "Y":
-            exit()
-        spm_train(args)
+    if args.model is None:
+        model_path = "{}/{}.{}.model".format(args.input_path, args.input_file, args.type)
+        if os.path.exists(model_path) is True:
+            print("The model already exsits. Do you override?[y/n] : ", end="")
+            ans = input()
+            if ans[0] == "y" or ans[0] == "Y":
+                spm_train(args)
+        else:
+            spm_train(args)
+    else:
+        model_path = "{}/{}".format(args.input_path, args.model)
 
     sp = spm.SentencePieceProcessor()
-    sp.Load(model_path + ".model")
+    sp.Load(model_path)
     return lambda x: " ".join(sp.EncodeAsPieces(x))
 
 def document_tokenize(args):
@@ -64,11 +71,13 @@ if __name__ == '__main__':
     parser.add_argument("--output-path", metavar="PATH", type=str, default=None,
                         help="path of output file(default:same as input-path)")
     parser.add_argument("--type", metavar="TYPE", choices=["word", "bpe", "unigram", "char"],
-                        type=str, default="word", help="model type[word|bpe|unigram|char](default:word)")
+                        type=str, default="bpe", help="model type[word|bpe|unigram|char](default:word)")
     parser.add_argument("--vocab-size", metavar="N", type=int, default=30000,
                         help="vocabulary size(default:30000). use it except 'word' type ")
-    parser.add_argument("--lang", metavar="LANG", type=str, choices=["en", "ja"], required=True,
+    parser.add_argument("--lang", metavar="LANG", type=str, default=None,
                         help="language")
+    parser.add_argument("--model", metavar="MODEL", type=str, default=None,
+                        help="model name if you use exist model")
 
     args = parser.parse_args()
 
@@ -78,7 +87,6 @@ if __name__ == '__main__':
 
     if args.output_file is None:
         args.output_file = args.input_file + "." + args.type
-
 
     print(args)
     document_tokenize(args)

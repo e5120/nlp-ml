@@ -4,7 +4,7 @@ tools_dir=../tools
 
 utils_dir=../utils
 
-# [JESC]
+# [JESC|sample]
 domain=JESC
 
 data_dir=../data/$domain

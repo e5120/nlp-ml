@@ -7,14 +7,14 @@ def model_opts(parser):
             help="word embedding size for src side.")
   group.add("--tgt-vec-size", type=int, default=256,
             help="word embedding size for tgt side.")
-  
+
   # Encoder-Decoder options
   group = parser.add_argument_group("Encoder-Decoder")
   group.add("--enc-type", type=str, default="brnn",
-            choices=["rnn", "brnn"]
+            choices=["rnn", "brnn"],
             help="type of encoder.[rnn|brnn]")
   group.add("--dec-type", type=str, default="rnn",
-            choices=["rnn"]
+            choices=["rnn"],
             help="type of decoder.[rnn]")
   group.add("--enc-vec-size", type=int, default=256,
             help="size of encoder rnn hidden states.")
@@ -25,14 +25,24 @@ def model_opts(parser):
   group.add("--dec-layers", type=int, default=2,
             help="number of layers in the decoder.")
   group.add("--rnn-type", type=str, default="LSTM",
-            choices=["LSTM", "GRU"],
+            choices=["RNN", "LSTM", "GRU"],
             help="the gate type to use in the RNNs")
-  
+
 def train_opts(parser):
   # training and saving options
   group = parser.add_argument_group("General")
-  group.add("--data", type=str, required=True,
-            help="path to the 'train and 'valid' file")
+  group.add("--src", type=str, required=True,
+            help="")
+  group.add("--tgt", type=str, required=True,
+            help="")
+  group.add("--src-dict", type=str, required=True,
+            help="")
+  group.add("--tgt-dict", type=str, required=True,
+            help="")
+  group.add("--src-valid", type=str, required=True,
+            help="")
+  group.add("--tgt-valid", type=str, required=True,
+            help="")
   group.add("--exec-name", type=str, default="test",
             help="identification name when executes the program")
   group.add("--save-model", type=str, default="model",
@@ -41,6 +51,8 @@ def train_opts(parser):
             help="save a checkpoint every X stepts")
   group.add("--no-gpu", action="store_true",
             help="do not want to use GPU")
+  group.add("--max-len", type=int, default=100,
+            help="maximize sequence length")
 
   # init options
   group = parser.add_argument_group("Initialization")
@@ -58,7 +70,7 @@ def train_opts(parser):
 
   # optimization options
   group = parser.add_argument_group("Optimization")
-  group.add("--batch-size"< type=int, default=64,
+  group.add("--batch-size", type=int, default=64,
             help="maximum batch size for training")
   group.add("--valid-steps", type=int, default=10000,
             help="perform validation every X steps")
@@ -85,13 +97,13 @@ def train_opts(parser):
             help="output logs to a file under this path.")
   group.add("--tensorboard", action="store_true",
             help="use tensorboardX for visualization during training.")
-            
-            
+
+
 def translate_opts(parser):
   group = parser.add_argument_group("Model")
   group.add("--model", type=str, required=True, nargs="+",
             help="path to model .pt file(s).")
-  
+
   group = parser.add_argument_group("Data")
   group.add("--src", type=str, required=True,
             help="source sequence to decode (one line per sequence)")
@@ -99,7 +111,7 @@ def translate_opts(parser):
             help="True target sequence (optional)")
   group.add("--output", type=str, default="pred.txt",
             help="path to output the predictions")
-  
+
   group = parser.add_argument_group("Logging")
   group.add("--verbose", action="store_true",
             help="print scores and predictions for each sentence")
@@ -109,13 +121,13 @@ def translate_opts(parser):
             help="print best attn for each word")
   group.add("--n-best", type=int, default=1,
             help="If verbose is set, will output the n_best decoded sentences")
-            
+
   group = parser.add_argument_group("Efficiency")
   group.add("--batch-size", type=int, default=30,
             help="batch size")
   group.add("--no-gpu", action="store_true",
             help="do not want to use GPU")
-  
+
 
 def preprocess_opts(parser):
   pass

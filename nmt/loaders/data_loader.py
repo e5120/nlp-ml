@@ -1,7 +1,11 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-from nmt.utils.token import PAD, EOS
+
+UNK = "<unk>"
+BOS = "<bos>"
+EOS = "<eos>"
+PAD = "<blank>"
 
 
 class TextDataset(Dataset):
@@ -26,14 +30,16 @@ class TextDataset(Dataset):
         src = self.src[idx].split(" ")
         tgt = self.tgt[idx].split(" ")
 
-        src = [self.src_vocab[subword] for subword in src] + [self.src_vocab[EOS]]
-        tgt = [self.tgt_vocab[subword] for subword in tgt] + [self.tgt_vocab[EOS]]
+        # word to index and add EOS and BOS token
+        src = [self.src_vocab[word] for word in src] + [self.src_vocab[EOS]]
+        tgt = [self.tgt_vocab[BOS]] + [self.tgt_vocab[word] for word in tgt] + [self.tgt_vocab[EOS]]
         src_len = len(src)
         tgt_len = len(tgt)
 
         assert src_len <= self.max_len and tgt_len <= self.max_len, \
-            "sequence length error"
+            "sequence length exceeds upper limit"
 
+        # padding
         src += [self.src_vocab[PAD]] * (self.max_len - src_len)
         tgt += [self.tgt_vocab[PAD]] * (self.max_len - tgt_len)
         return src, tgt, src_len, tgt_len
@@ -50,7 +56,7 @@ class TextDataLoader(object):
             yield src, tgt, src_len, tgt_len
 
 
-def data_loader(src_file, tgt_file, src_vocab, tgt_vocab, max_len, batch_size, num_workers=4):
+def get_data_loader(src_file, tgt_file, src_vocab, tgt_vocab, max_len, batch_size, num_workers=4):
     dataset = TextDataset(src_file, tgt_file, src_vocab, tgt_vocab, max_len)
     return TextDataLoader(dataset, batch_size, num_workers)
 
@@ -66,9 +72,10 @@ if __name__ == '__main__':
     src_file = "../../data/sample/train.problem"
     tgt_file = "../../data/sample/train.answer"
 
-    dataloader = data_loader(src_file, tgt_file, src_vocab, tgt_vocab, max_len=100, batch_size=10, num_workers=0)
+    dataloader = get_data_loader(src_file, tgt_file, src_vocab, tgt_vocab,
+                                max_len=100, batch_size=10, num_workers=0)
     for i, (src, tgt, src_len, tgt_len) in enumerate(dataloader):
+        print(src, tgt)
         print(src.size(), tgt.size())
         print(src_len, tgt_len)
-        print(src, tgt)
         break

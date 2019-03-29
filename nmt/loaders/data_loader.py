@@ -1,6 +1,8 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 
+from nmt.utils.misc import load_dict
+
 
 UNK = "<unk>"
 BOS = "<bos>"
@@ -9,7 +11,7 @@ PAD = "<blank>"
 
 
 class TextDataset(Dataset):
-    def __init__(self, src_file, tgt_file, src_vocab, tgt_vocab, max_len=100):
+    def __init__(self, src_file, tgt_file, src_dict_file, tgt_dict_file, max_len=100):
         super(TextDataset, self).__init__()
         with open(src_file, encoding="utf-8") as f:
             self.src = f.read().split("\n")
@@ -19,8 +21,8 @@ class TextDataset(Dataset):
         assert len(self.src) == len(self.tgt), \
                 "length is not equal, {} and {}".format(len(self.src), len(self.tgt))
 
-        self.src_vocab = src_vocab
-        self.tgt_vocab = tgt_vocab
+        self.src_vocab = load_dict(src_dict_file)
+        self.tgt_vocab = load_dict(tgt_dict_file)
         self.max_len = max_len
 
     def __len__(self):
@@ -46,34 +48,34 @@ class TextDataset(Dataset):
 
 
 class TextDataLoader(object):
-    def __init__(self, dataset, batch_size, num_workers):
+    def __init__(self, dataset, batch_size, device, num_workers):
         self.dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
+        self.device = device
 
     def __iter__(self):
         for src, tgt, src_len, tgt_len in self.dataloader:
-            src = torch.unsqueeze(torch.stack(src[:max(src_len)]), -1)
-            tgt = torch.unsqueeze(torch.stack(tgt[:max(tgt_len)]), -1)
-            yield src, tgt, src_len, tgt_len
+            src = torch.stack(src[:max(src_len)])
+            tgt = torch.stack(tgt[:max(tgt_len)])
+            yield src.to(self.device), tgt.to(self.device), src_len.to(self.device), tgt_len.to(self.device)
 
 
-def get_data_loader(src_file, tgt_file, src_vocab, tgt_vocab, max_len, batch_size, num_workers=4):
-    dataset = TextDataset(src_file, tgt_file, src_vocab, tgt_vocab, max_len)
-    return TextDataLoader(dataset, batch_size, num_workers)
+def get_data_loader(src_file, tgt_file, src_dict_file, tgt_dict_file,
+                    max_len, batch_size, device="cpu", num_workers=4):
+    dataset = TextDataset(src_file, tgt_file, src_dict_file, tgt_dict_file, max_len)
+    return TextDataLoader(dataset, batch_size, device, num_workers)
 
 
 if __name__ == '__main__':
     import json
 
-    with open("../../data/sample/train.problem.vocab.json", encoding="utf-8") as f:
-        src_vocab = json.load(f)
-    with open("../../data/sample/train.answer.vocab.json", encoding="utf-8") as f:
-        tgt_vocab = json.load(f)
-
     src_file = "../../data/sample/train.problem"
     tgt_file = "../../data/sample/train.answer"
+    src_dict_file = "../../data/sample/train.problem.vocab.json"
+    tgt_dict_file = "../../data/sample/train.answer.vocab.json"
 
-    dataloader = get_data_loader(src_file, tgt_file, src_vocab, tgt_vocab,
+    dataloader = get_data_loader(src_file, tgt_file, src_dict_file, tgt_dict_file,
                                 max_len=100, batch_size=10, num_workers=0)
+
     for i, (src, tgt, src_len, tgt_len) in enumerate(dataloader):
         print(src, tgt)
         print(src.size(), tgt.size())

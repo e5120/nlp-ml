@@ -56,7 +56,7 @@ def document_tokenize(args):
             seqs.append(fn_tokenizer(line.strip()))
             if i % 100000 == 0:
                 print("processed {} sentences".format(i))
-        with open("{}/{}".format(args.output_path, args.output_file), "w", encoding="utf-8") as g:
+        with open("{}/{}".format(args.output_path, args.output_file), "w", newline="\n", encoding="utf-8") as g:
             g.write("\n".join(seqs))
 
 if __name__ == '__main__':

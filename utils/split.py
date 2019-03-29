@@ -5,8 +5,8 @@ import numpy as np
 
 
 def write(args, prefix, src, tgt):
-    with open("{}/{}.{}".format(args.output_path, prefix, args.src), "w", encoding="utf-8") as s, \
-        open("{}/{}.{}".format(args.output_path, prefix, args.tgt), "w", encoding="utf-8") as t:
+    with open("{}/{}.{}".format(args.output_path, prefix, args.src), "w", newline="\n", encoding="utf-8") as s, \
+        open("{}/{}.{}".format(args.output_path, prefix, args.tgt), "w", newline="\n", encoding="utf-8") as t:
         s.write("\n".join(src))
         t.write("\n".join(tgt))
 
